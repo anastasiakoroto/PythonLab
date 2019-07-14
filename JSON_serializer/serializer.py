@@ -19,7 +19,7 @@ serial = StrangerThings('Stranger Things', 3, 8,
                         ["Suzie, Do You Copy?", "The Mall Rats", "Case of the Missing Lifeguard", 'The Sauna Test',
                          'The Flayed', 'E Pluribus Unum', 'The Bite', 'The battle of Starcourt'],
                         [{'name': 'Billy', 'diedLikeHero': True, 'totallyDied': True},
-                         {'name': "Hopper", 'diedLikeHero': True, 'totallyDied': False}])  # can write None/0
+                         {'name': "Hopper", 'diedLikeHero': True, 'totallyDied': False}])
 
 
 class Serializer:
@@ -92,7 +92,7 @@ ser = Serializer()
 ss = ser.serialize(serial)
 print('Serialized string (view 2): ')
 print(ss, end='\n\n')
-################################################# DESERIALIZER #####################################################
+
 print('JSON converting:')
 j = json.loads('{"serial_name": "Stranger Things", "season_number": 3, "amount_of_series":8, '
                '"ser_names":["Suzie, Do You Copy?", "The Mall Rats", "Case of the Missing Lifeguard", '
@@ -195,7 +195,6 @@ class Deserializer:
                 key_ch, value_ch, colon = False, False, False
 
             index += 1
-        # print(pairs)
         return pairs
 
     def make_dict(self, pairs_list):
@@ -223,15 +222,12 @@ class Deserializer:
             return None
         elif string[0] == '"':
             return string[1:-1]
-        elif string[0] == '[':  # elif re.match('[\[.+\]]', string):  # for arrays   + посмотреть как словарь раскрыть
+        elif string[0] == '[':
             return self.if_array(string)
         elif string[0] == '{':
             no_borders_str = string[1:-1]
             if_dict = self.split_to_pairs(no_borders_str)
-            # pp = self.next(p)  # делает конечный словарь
             return self.make_dict(if_dict)
-        # elif re.match('[0-9]+', string):
-        #     return float(string)
         elif self.is_number(string):
             if float(string) % 1 == 0:
             # if float(string).is_integer():
