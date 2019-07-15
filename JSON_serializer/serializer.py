@@ -205,7 +205,6 @@ class Deserializer:
             key = self.deserialize(temp_1)
             value = self.deserialize(temp_2)
             object_dict[key] = value
-            # print(key, value, sep='   ')
         return object_dict
 
     def is_number(self, n):
