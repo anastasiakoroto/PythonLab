@@ -1,4 +1,7 @@
-import json
+# import json
+import sys
+import argparse
+import os.path
 
 
 class StrangerThings:
@@ -85,22 +88,6 @@ class Serializer:
         print('}', end='\n\n')
         #
         return finish_string
-
-
-ser = Serializer()
-# ser.serialize(serial)
-ss = ser.serialize(serial)
-print('Serialized string (view 2): ')
-print(ss, end='\n\n')
-
-print('JSON converting:')
-j = json.loads('{"serial_name": "Stranger Things", "season_number": 3, "amount_of_series":8, '
-               '"ser_names":["Suzie, Do You Copy?", "The Mall Rats", "Case of the Missing Lifeguard", '
-               '"The Sauna Test", "The Flayed", "E Pluribus Unum", "The Bite", "The battle of Starcourt"], '
-               '"fallen":[{"name":"Billy", "diedLikeHero":true, "totallyDied":true}, '
-               '{"name":"Hopper", "diedLikeHero":true, "totallyDied":false}]}')
-print(j)
-print()
 
 
 class Deserializer:
@@ -205,7 +192,6 @@ class Deserializer:
             key = self.deserialize(temp_1)
             value = self.deserialize(temp_2)
             object_dict[key] = value
-            # print(key, value, sep='   ')
         return object_dict
 
     def is_number(self, n):
@@ -228,6 +214,8 @@ class Deserializer:
             no_borders_str = string[1:-1]
             if_dict = self.split_to_pairs(no_borders_str)
             return self.make_dict(if_dict)
+        # elif re.match('[0-9]+', string):
+        #     return float(string)
         elif self.is_number(string):
             if float(string) % 1 == 0:
             # if float(string).is_integer():
@@ -236,8 +224,63 @@ class Deserializer:
                 return float(string)
 
 
+ser = Serializer()
+# ser.serialize(serial)
+ss = ser.serialize(serial)
+print('Serialized string (view 2): ')
+print(ss, end='\n\n')
+
+# print('JSON converting:')
+# j = json.loads('{"serial_name": "Stranger Things", "season_number": 3, "amount_of_series":8, '
+#                '"ser_names":["Suzie, Do You Copy?", "The Mall Rats", "Case of the Missing Lifeguard", '
+#                '"The Sauna Test", "The Flayed", "E Pluribus Unum", "The Bite", "The battle of Starcourt"], '
+#                '"fallen":[{"name":"Billy", "diedLikeHero":true, "totallyDied":true}, '
+#                '{"name":"Hopper", "diedLikeHero":true, "totallyDied":false}]}')
+# print(j)
+print()
 des = Deserializer()
 print('Deserialized dictionary: ')
 print(des.deserialize(ss))
 # print(des.deserialize('{"fallen": [{"name" : "Billy", "diedLikeHero": true, "totallyDied":true}, '
 #                       '{"name":"Hopper", "diedLikeHero":true, "totallyDied":false}]}'))
+
+
+def createParser():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('string', nargs='*', type=str)
+    return parser
+
+
+if __name__ == '__main__':
+    parser = createParser()
+    namespace = parser.parse_args(sys.argv[1:])
+    term_string = ''
+    if namespace.string:
+        for i in namespace.string:
+            term_string += i
+        print(term_string)
+        # check attribute: file, url or json_string
+        if os.path.isfile('./' + term_string):
+            file = open(term_string, 'r', encoding='utf-8')
+            string_from_file = ''
+            for line in file:
+                temp = line.strip()
+                string_from_file += temp
+            # print(string_from_file)
+            if string_from_file != '':
+                d = des.deserialize(string_from_file)
+                if len(string_from_file) < 700:
+                    print(d)
+                else:
+                    out_file = open('output.txt', 'w', encoding='utf-8')
+                    out_file.write(str(d))
+                    print('Deserialized object is too long. It was written to output.txt in this directory.')
+                    answer = input('Do you want to open this file in terminal? (y/n)')
+                    if answer in ['y', 'yes', 'Y', 'YES']:
+                        print(d)
+                    out_file.close()
+                file.close()
+        else:
+            print(des.deserialize(term_string))
+
+# print(des.deserialize('{"name":"Eminem", "hobby":"rap", "age":46, "albums":["Kamikaze", "Revival"]}'))
