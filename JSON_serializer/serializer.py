@@ -1,7 +1,7 @@
-# import json
 import sys
 import argparse
 import os.path
+import requests
 
 
 class StrangerThings:
@@ -60,7 +60,7 @@ class Serializer:
             for attr in obj:
                 key = self.serialize(attr)
                 value = self.serialize(obj[attr])
-                new_string = str(key) + ':' + str(value)  # probably should remove making key type of str
+                new_string = str(key) + ':' + str(value)
                 attr_value_dict = attr_value_dict + new_string + ', '
             attr_value_dict = attr_value_dict[:-2]
             attr_value_dict += '}'
@@ -78,15 +78,6 @@ class Serializer:
             note.append(finish_note)
             finish_string = finish_string + finish_note + ', '
         finish_string = finish_string[:-2] + '}'
-        # finish_string += '}'
-        # print('Result: ', finish_string, sep='\n', end='\n\n')
-        print('Serialized string (view 1): ')
-        print('{', end='')
-        for i in range(len(note) - 1):
-            print(note[i], end=',\n')
-        print(note[len(note) - 1], end='')
-        print('}', end='\n\n')
-        #
         return finish_string
 
 
@@ -103,9 +94,6 @@ class Deserializer:
         for letter in initial_string:
             if letter == '"':
                 commas_opened = not commas_opened
-            # elif letter == ',' and commas_opened is False and not brackets_list:
-            #     list_of_el.append(initial_string[begin_to_split: index])
-            #     begin_to_split = index + 1
             elif letter == ',' and commas_opened is False:
                 try:
                     if not brackets_list:
@@ -117,7 +105,6 @@ class Deserializer:
             elif letter == '{' or letter == '[':
                 brackets_list.append(letter)
             elif letter in ['}', ']']:
-            # elif (letter == ']' and brackets_list[-1] == '[') or (letter == '}' and brackets_list[-1] == '{'):
                 try:
                     if not brackets_list:
                         raise ValueError
@@ -126,7 +113,7 @@ class Deserializer:
                     else:
                         raise ValueError
                 except ValueError:
-                    print('Wrong data. It cannot be deserialized.')
+                    print('Wrong data. It cannot be deserialized...')
                     return []  # check what json returns actually
             if index == len(initial_string) - 1:
                 list_of_el.append(initial_string[begin_to_split: index + 1])
@@ -160,10 +147,7 @@ class Deserializer:
                 commas_opened = not commas_opened
             elif letter in ['[', '{']:
                 brackets.append(letter)
-            # elif (letter == ']' and brackets[-1] == '[') or (letter == '}' and brackets[-1] == '{'):
-            #     brackets.pop(-1)
             elif letter in ['}', ']']:
-            # elif (letter == ']' and brackets_list[-1] == '[') or (letter == '}' and brackets_list[-1] == '{'):
                 try:
                     if not brackets:
                         raise ValueError
@@ -172,15 +156,20 @@ class Deserializer:
                     else:
                         raise ValueError
                 except ValueError:
-                    print('Wrong data. It cannot be deserialized.')
+                    print('Wrong data. It cannot be deserialized!')
                     return []  # check what json returns actually
-            if not brackets and index == (len(string) - 1):
-                value = string[begin_of_split: index + 1]
-                value_ch = not value_ch
+            try:
+                if not brackets and index == (len(string) - 1):
+                    value = string[begin_of_split: index + 1]
+                    value_ch = not value_ch
+                elif index == (len(string) - 1) and brackets:
+                    raise ValueError
+            except ValueError:
+                print('Wrong data. ' + str(len(brackets)) + ' of brackets without pair. It cannot be deserialized.')
+                return {}
             if key_ch is True and value_ch is True:
                 pairs.append((key, value))
                 key_ch, value_ch, colon = False, False, False
-
             index += 1
         return pairs
 
@@ -209,56 +198,64 @@ class Deserializer:
         elif string[0] == '"':
             return string[1:-1]
         elif string[0] == '[':
-            return self.if_array(string)
+            try:
+                if string[-1] == ']':
+                    return self.if_array(string)
+                else:
+                    raise ValueError
+            except ValueError:
+                print('Wrong data. It cannot be deserialized.')
+                return []
         elif string[0] == '{':
-            no_borders_str = string[1:-1]
-            if_dict = self.split_to_pairs(no_borders_str)
-            return self.make_dict(if_dict)
-        # elif re.match('[0-9]+', string):
-        #     return float(string)
+            try:
+                if string[-1] == '}':
+                    no_borders_str = string[1:-1]
+                    if_dict = self.split_to_pairs(no_borders_str)
+                    return self.make_dict(if_dict)
+                else:
+                    raise ValueError
+            except ValueError:
+                print('Wrong data. It cannot be deserialized :(')
+                return {}
         elif self.is_number(string):
             if float(string) % 1 == 0:
-            # if float(string).is_integer():
-                return int(string)
+                number = float(string)
+                return int(number)
             else:
                 return float(string)
 
 
 ser = Serializer()
-# ser.serialize(serial)
 ss = ser.serialize(serial)
-print('Serialized string (view 2): ')
+print('Serialized string: ')
 print(ss, end='\n\n')
 
-# print('JSON converting:')
-# j = json.loads('{"serial_name": "Stranger Things", "season_number": 3, "amount_of_series":8, '
-#                '"ser_names":["Suzie, Do You Copy?", "The Mall Rats", "Case of the Missing Lifeguard", '
-#                '"The Sauna Test", "The Flayed", "E Pluribus Unum", "The Bite", "The battle of Starcourt"], '
-#                '"fallen":[{"name":"Billy", "diedLikeHero":true, "totallyDied":true}, '
-#                '{"name":"Hopper", "diedLikeHero":true, "totallyDied":false}]}')
-# print(j)
-print()
 des = Deserializer()
-print('Deserialized dictionary: ')
-print(des.deserialize(ss))
-# print(des.deserialize('{"fallen": [{"name" : "Billy", "diedLikeHero": true, "totallyDied":true}, '
-#                       '{"name":"Hopper", "diedLikeHero":true, "totallyDied":false}]}'))
+print('Deserialized object: ')
+print(des.deserialize(ss), end='\n\n')
 
 
-def createParser():
+def create_parser():
     parser = argparse.ArgumentParser()
     parser.add_argument('string', nargs='*', type=str)
     return parser
 
 
+def is_url(address):
+    try:
+        url = requests.head(address)
+        return url.status_code == 200
+    except ValueError:
+        return False
+
+
 if __name__ == '__main__':
-    parser = createParser()
+    parser = create_parser()
     namespace = parser.parse_args(sys.argv[1:])
     term_string = ''
     if namespace.string:
         for i in namespace.string:
             term_string += i
-        print(term_string)
         # check attribute: file, url or json_string
         if os.path.isfile('./' + term_string):
             file = open(term_string, 'r', encoding='utf-8')
@@ -266,10 +263,9 @@ if __name__ == '__main__':
             for line in file:
                 temp = line.strip()
                 string_from_file += temp
-            # print(string_from_file)
             if string_from_file != '':
                 d = des.deserialize(string_from_file)
-                if len(string_from_file) < 700:
+                if len(str(d)) < 500:
                     print(d)
                 else:
                     out_file = open('output.txt', 'w', encoding='utf-8')
@@ -277,10 +273,26 @@ if __name__ == '__main__':
                     print('Deserialized object is too long. It was written to output.txt in this directory.')
                     answer = input('Do you want to open this file in terminal? (y/n)')
                     if answer in ['y', 'yes', 'Y', 'YES']:
+                        print('Deserialized object')
                         print(d)
                     out_file.close()
                 file.close()
+        elif is_url(term_string):
+            print('URL: ' + term_string)
+            f = requests.get(term_string)
+            my_file = f.text
+            file_string = ''
+            for i in my_file:
+                file_string += i
+            file_string = file_string.strip()
+            d = des.deserialize(file_string)
+            if len(str(d)) < 500:
+                print('Deserialized object: ')
+                print(d)
+            else:
+                out_file = open('output.txt', 'w', encoding='utf-8')
+                out_file.write(str(d))
+                print('Deserialized object is too long. It was written to output.txt in this directory.')
         else:
+            print('Deserialized object: ')
             print(des.deserialize(term_string))
-
-# print(des.deserialize('{"name":"Eminem", "hobby":"rap", "age":46, "albums":["Kamikaze", "Revival"]}'))
