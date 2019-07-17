@@ -2,7 +2,6 @@ import sys
 import argparse
 import os.path
 import requests
-import json
 
 
 class StrangerThings:
