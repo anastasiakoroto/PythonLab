@@ -1,31 +1,3 @@
-import sys
-import argparse
-import os.path
-import requests
-import json
-
-
-class StrangerThings:
-
-    def __init__(self, serial_name, season_number, amount_of_ser, ser_names, fallen):
-        self.serial_name = serial_name
-        self.season_number = season_number
-        self.amount_of_series = amount_of_ser
-        if ser_names is None:
-            ser_names = []
-        self.ser_names = ser_names
-        if fallen is None:
-            fallen = []
-        self.fallen = fallen
-
-
-serial = StrangerThings('Stranger Things', 3, 8,
-                        ["Suzie, Do You Copy?", "The Mall Rats", "Case of the Missing Lifeguard", 'The Sauna Test',
-                         'The Flayed', 'E Pluribus Unum', 'The Bite', 'The battle of Starcourt'],
-                        [{'name': 'Billy', 'diedLikeHero': True, 'totallyDied': True},
-                         {'name': "Hopper", 'diedLikeHero': True, 'totallyDied': False}])
-
-
 class Serializer:
 
     def serialize(self, obj):
@@ -80,9 +52,6 @@ class Serializer:
             finish_string = finish_string + finish_note + ', '
         finish_string = finish_string[:-2] + '}'
         return finish_string
-
-
-class Deserializer:
 
     def if_array(self, initial_string):
         list_of_el = []  # list of separate strings
@@ -178,7 +147,7 @@ class Deserializer:
                     raise ValueError
             except ValueError:
                 check.append(1)
-                print('Wrong data. It cannot be deserialized.')
+                print('Wrong data. It cannot be deserialized!')
                 return check
 
     def is_number(self, n):
@@ -207,7 +176,7 @@ class Deserializer:
                 else:
                     raise ValueError
             except ValueError:
-                print('Wrong data. It cannot be deserialized.')
+                print('Wrong data. It cannot be deserialized |')
                 if string[0] == '{':
                     return {}
                 return []
@@ -218,85 +187,8 @@ class Deserializer:
             else:
                 return float(string)
 
-
-ser = Serializer()
-ss = ser.serialize(serial)
-print('Serialized string: ')
-print(ss, end='\n\n')
-
-des = Deserializer()
-print('Deserialized object: ')
-print(des.deserialize(ss), end='\n\n')
-
-
-def create_parser():
-    parser = argparse.ArgumentParser()
-    parser.add_argument('string', nargs='*', type=str)
-    return parser
-
-
-def is_url(address):
-    try:
-        url = requests.head(address)
-        return url.status_code == 200
-    except ValueError:
-        return False
-
-
-def file_argument(file_name):
-    file_name = open(file_name, 'r', encoding='utf-8')
-    string_from_file = ''
-    for line in file_name:
-        temp = line.strip()
-        string_from_file += temp
-    if string_from_file != '':
-        obj = des.deserialize(string_from_file)
-        write_to_file(obj)
-        file_name.close()
-
-
-def write_to_file(decoded_string):
-    if len(str(decoded_string)) < 500:
-        print(decoded_string)
-    else:
-        out_file = open('output.txt', 'w', encoding='utf-8')
-        out_file.write(str(decoded_string))
-        print('Deserialized object is too long. It was written to output.txt in this directory.')
-        answer = input('Do you want to open this file in terminal? (y/n)')
-        if answer in ['y', 'yes', 'Y', 'YES']:
-            print('Deserialized object')
-            print(decoded_string)
-        out_file.close()
-
-
-def url_argument(url_name):
-    print('URL: ' + url_name)
-    f = requests.get(url_name)
-    my_file = f.text
-    file_string = ''
-    for symbol in my_file:
-        file_string += symbol
-    file_string = file_string.strip()
-    d = des.deserialize(file_string)
-    write_to_file(d)
-
-
-if __name__ == '__main__':
-    parser = create_parser()
-    namespace = parser.parse_args(sys.argv[1:])
-    term_string = ''
-    if namespace.string:
-        for i in namespace.string:
-            term_string += i
-        # check attribute: file, url or json_string
-        if os.path.isfile('./' + term_string):
-            file_argument(term_string)
-        elif is_url(term_string):
-            url_argument(term_string)
+    def check_format(self, input_string):
+        if input_string[0] == '{':
+            return self.deserialize(input_string)
         else:
-            term_string.strip()
-            if term_string[0] == '{':
-                print('Deserialized object: ')
-                print(des.deserialize(term_string))
-            else:
-                print('Unknown information. Check your input data.')
+            return 'Wrong data. It is not a json format.'
