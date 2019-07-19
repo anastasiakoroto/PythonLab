@@ -72,8 +72,9 @@ def run_cmd_line():
             url_argument(term_string)
         else:
             string = term_string.strip()
-            print(string)
+            print('Your json-string: ' + string)
             st = serializer.check_format(string)
+            print(f'Deserialized: {st}')
             if type(st) == str:
                 print('Unknown information. Check your input data.')
 
