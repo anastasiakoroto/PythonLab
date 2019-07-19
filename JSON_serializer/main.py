@@ -3,20 +3,37 @@ import argparse
 import sys
 import os.path
 
+
 import serializer
 
 
 def create_parser():
     parser = argparse.ArgumentParser()
-    parser.add_argument('string', nargs='*', type=str)
+    parser.add_argument('-f', dest='file_path', nargs='*', type=str,
+                        help='decode file of defined directory '
+                             '(which contains data in json format) from json to object')
+    parser.add_argument('-u', dest='url', nargs='*', required=False, type=str,
+                        help='decode data defined in URL from json to object ')
+    parser.add_argument('-j', dest='json_string', nargs='*', required=False, type=str,
+                        help='decode single quote string in json format from json to object')
+    parser.add_argument('unknown_data', nargs='*', type=str, help='call instruction')
     return parser
+
+
+def is_valid_file(arg):
+    if not os.path.exists(arg):
+        print(f'The file {arg} does not exist. Check your input data.')
+        return False
+    else:
+        return True
 
 
 def is_url(address):
     try:
         url = requests.head(address)
         return url.status_code == 200
-    except ValueError:
+    except IOError:
+        print(f'The url {address} is not correct. Check your input data. ')
         return False
 
 
@@ -62,24 +79,29 @@ def run_cmd_line():
     parser = create_parser()
     namespace = parser.parse_args(sys.argv[1:])
     term_string = ''
-    if namespace.string:
-        for i in namespace.string:
+    if namespace.file_path:
+        for i in namespace.file_path:
             term_string += i
-        # check attribute: file, url or json_string
-        if os.path.exists(term_string):
+        if is_valid_file(term_string):
             file_argument(term_string)
-        elif is_url(term_string):
+    elif namespace.url:
+        for i in namespace.url:
+            term_string += i
+        if is_url(term_string):
             url_argument(term_string)
-        else:
-            string = term_string.strip()
-            print('Your json-string: ' + string)
-            st = serializer.check_format(string)
-            print(f'Deserialized: {st}')
-            if type(st) == str:
-                print('Unknown information. Check your input data.')
+    elif namespace.json_string:
+        for i in namespace.json_string:
+            term_string += i
+        string = term_string.strip()
+        print('Your json-string: ' + string)
+        st = serializer.check_format(string)
+        print(f'Deserialized: {st}')
+    else:
+        print('Instruction: You should point input data after script name. '
+              'It can be path to file, url or string in json-format. '
+              f'Use command\n $ python3 {sys.argv[0]} -h\nto see how you can run the program.')
 
 
 if __name__ == '__main__':
     serializer = serializer.Serializer()
     run_cmd_line()
-
