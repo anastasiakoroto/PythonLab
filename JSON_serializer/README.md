@@ -22,7 +22,7 @@ To run the program from terminal it needs to point interpreter and name of the f
 
 ***Examples:***  
 ```
-$ python3 main.py /path/to/file/file_name.txt
-$ python3 main.py http://api.plos.org/search?q=title:DNA
-$ python3 main.py '{"name":"Eminem", "hobby":"rap", "age":46, "albums":["Kamikaze", "Revival"]}'  
+$ python3 main.py -f /path/to/file/file_name.txt
+$ python3 main.py -u http://api.plos.org/search?q=title:DNA
+$ python3 main.py -j '{"name":"Eminem", "hobby":"rap", "age":46, "albums":["Kamikaze", "Revival"]}'  
 ```
