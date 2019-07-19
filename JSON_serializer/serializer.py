@@ -187,7 +187,7 @@ class Serializer:
             else:
                 return float(string)
 
-    def check_format(self, input_string):
+    def check_format(self, input_string):  # check if string has json-format
         if input_string[0] == '{':
             return self.deserialize(input_string)
         else:
