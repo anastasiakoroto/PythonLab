@@ -30,7 +30,7 @@ def is_valid_file(arg):
 
 def is_url(address):
     try:
-        url = requests.head(address)
+        url = requests.get(address)
         return url.status_code == 200
     except IOError:
         print(f'There is a problem with access to url {address}. Hint: Often errors associated with:\n'
@@ -58,7 +58,7 @@ def write_to_file(decoded_string):
         out_file.write(str(decoded_string))
         print('Deserialized object is too long. It was written to output.txt in this directory.')
         answer = input('Do you want to open this file in terminal? (y/n)')
-        if answer in const.ANSWERS:
+        if answer in const.POSITIVE_ANSWERS:
             print('Deserialized object')
             print(decoded_string)
         out_file.close()
@@ -71,9 +71,12 @@ def url_argument(url_name):
     file_string = ''
     for symbol in my_file:
         file_string += symbol
-    file_string = file_string.strip()
-    d = serializer.check_format(file_string)
-    write_to_file(d)
+    if file_string != '':
+        file_string = file_string.strip()
+        d = serializer.check_format(file_string)
+        write_to_file(d)
+    else:
+        print(f'The URL {url_name} has no data.')
 
 
 def run_cmd_line():
