@@ -147,7 +147,7 @@ class Serializer:
                     raise ValueError
             except ValueError:
                 check.append(1)
-                print('Wrong data. It cannot be deserialized!')
+                print('Wrong data. It cannot be deserialized.')
                 return check
 
     def is_number(self, n):
@@ -176,7 +176,7 @@ class Serializer:
                 else:
                     raise ValueError
             except ValueError:
-                print('Wrong data. It cannot be deserialized |')
+                print('Wrong data. It cannot be deserialized.')
                 if string[0] == '{':
                     return {}
                 return []
