@@ -3,9 +3,7 @@ import argparse
 import sys
 import os.path
 
-
-import serializer
-import const
+from JSON_serializer import serializer, const
 
 
 def create_parser():
@@ -32,10 +30,14 @@ def is_url(address):
     try:
         url = requests.get(address)
         return url.status_code == 200
-    except IOError:
-        print(f'There is a problem with access to url {address}. Hint: Often errors associated with:\n'
-              f'1) correctness of the input data; \n'
-              f'2) internet connection. ')
+    except requests.Timeout:
+        print(f'There is a problem with access to url {address}. Hint: Timeout expired. Try again.')
+        return False
+    except requests.ConnectionError:
+        print(f'There is a problem with access to url {address}. Hint: Check your internet connection. ')
+        return False
+    except requests.RequestException:
+        print(f'There is a problem with access to url {address}. Hint: Check correctness of the input data. ')
         return False
 
 

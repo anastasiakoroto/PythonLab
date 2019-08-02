@@ -2,9 +2,11 @@ class Serializer:
 
     def serialize(self, obj):
         if type(obj) == str:
+            if '"'or '\\' in obj:
+                obj = self.replace_symbol(obj)
             return '"' + obj + '"'
         elif type(obj) in [int, float]:
-            return obj
+            return str(obj)
         elif type(obj) is bool:
             return str(obj).lower()
         elif obj is None:
@@ -15,6 +17,19 @@ class Serializer:
             return self.if_dict(obj)
         else:
             return self.if_other(obj)
+
+    def replace_symbol(self, string):
+        if '"' in string and '\\' in string:
+            temp = string.replace('\\', '\\\\')
+            temp_sec = temp.replace('"', '\\"')
+            string = temp_sec
+        elif '"' in string:  # commas in commas case
+            temp = string.replace('"', '\\"')
+            string = temp
+        elif '\\' in string:  # '\' in string case
+            temp = string.replace('\\', '\\\\')
+            string = temp
+        return string
 
     def if_list(self, obj):
         if len(obj) != 0:
@@ -33,7 +48,7 @@ class Serializer:
             for attr in obj:
                 key = self.serialize(attr)
                 value = self.serialize(obj[attr])
-                new_string = str(key) + ':' + str(value)
+                new_string = str(key) + ': ' + str(value)
                 attr_value_dict = attr_value_dict + new_string + ', '
             attr_value_dict = attr_value_dict[:-2]
             attr_value_dict += '}'
@@ -47,7 +62,7 @@ class Serializer:
         for attribute in obj.__dict__:
             attr_name = self.serialize(attribute)
             attr_value = self.serialize(getattr(obj, attribute))
-            finish_note = attr_name + ':' + str(attr_value)
+            finish_note = attr_name + ': ' + str(attr_value)
             note.append(finish_note)
             finish_string = finish_string + finish_note + ', '
         finish_string = finish_string[:-2] + '}'
@@ -69,7 +84,11 @@ class Serializer:
                 if len(check_exception) != 0:
                     return []
             elif letter == ',' and commas_opened is False and not brackets_list:
-                list_of_el.append(initial_string[begin_to_split: index])
+                if begin_to_split == index:
+                    print('It cannot be deserialized. Probably you have extra comma.')  # extra comma case
+                    return []
+                else:
+                    list_of_el.append(initial_string[begin_to_split: index])
                 begin_to_split = index + 1
             if index == len(initial_string) - 1:
                 list_of_el.append(initial_string[begin_to_split: index + 1])
@@ -100,6 +119,9 @@ class Serializer:
                 value = string[begin_of_split: index]
                 value_ch = not value_ch
                 begin_of_split = index + 1
+            elif letter == ',' and commas_opened is False and colon is False and not brackets:  # extra comma case
+                print('It cannot be deserialized. Probably you have extra comma.')
+                return {}
             elif letter == '"':
                 commas_opened = not commas_opened
             elif letter in ['{', '[', ']', '}']:
@@ -147,7 +169,7 @@ class Serializer:
                     raise ValueError
             except ValueError:
                 check.append(1)
-                print('Wrong data. It cannot be deserialized.')
+                print('Wrong data. It cannot be deserialized!')
                 return check
 
     def is_number(self, n):
@@ -160,10 +182,16 @@ class Serializer:
     def deserialize(self, string):
         if string == 'true' or string == 'false':
             return string == 'true'
+        elif string[0] == '"':
+            if '\\"' in string:  # commas in commas case
+                temp_string = string.replace('\\"', '"')
+                string = temp_string
+            if '\\\\' in string:  # back slash case
+                temp_string = string.replace('\\\\', '\\')
+                string = temp_string
+            return string[1:-1]
         elif string in ['[]', '{}', 'null']:
             return None
-        elif string[0] == '"':
-            return string[1:-1]
         elif string[0] in ['[', '{']:
             try:
                 if string[0] == '[' and string[-1] == ']':
@@ -176,7 +204,7 @@ class Serializer:
                 else:
                     raise ValueError
             except ValueError:
-                print('Wrong data. It cannot be deserialized.')
+                print('Wrong data. It cannot be deserialized |')
                 if string[0] == '{':
                     return {}
                 return []
@@ -187,7 +215,8 @@ class Serializer:
             else:
                 return float(string)
 
-    def check_format(self, input_string):  # check if string has json-format
+    def check_format(self, input_string):
+        input_string = input_string.strip()
         if input_string[0] == '{':
             return self.deserialize(input_string)
         else:
