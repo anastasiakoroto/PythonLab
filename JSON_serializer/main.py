@@ -3,7 +3,8 @@ import argparse
 import sys
 import os.path
 
-from JSON_serializer import serializer, const
+import serializer
+import const
 
 
 def create_parser():
@@ -31,25 +32,36 @@ def is_url(address):
         url = requests.get(address)
         return url.status_code == 200
     except requests.Timeout:
-        print(f'There is a problem with access to url {address}. Hint: Timeout expired. Try again.')
-        return False
+        raise requests.Timeout(f'There is a problem with access to url {address}. Hint: Timeout expired. Try again.')
+    except requests.TooManyRedirects:
+        raise requests.TooManyRedirects(f'There is a problem with access to url {address}. Hint: Too many redirects. ')
     except requests.ConnectionError:
-        print(f'There is a problem with access to url {address}. Hint: Check your internet connection. ')
-        return False
+        raise requests.ConnectionError(f'There is a problem with access to url {address}. Hint: Check your internet '
+                                       f'connection (If there are no problems with internet, check correctness of '
+                                       f'the input data). ')
     except requests.RequestException:
-        print(f'There is a problem with access to url {address}. Hint: Check correctness of the input data. ')
-        return False
+        raise requests.RequestException(f'There is a problem with access to url {address}. '
+                                        f'Hint: Check correctness of the input data. ')
 
 
 def file_argument(file_name):
     string_from_file = ''
-    with open(file_name, 'r') as input_file:
-        for line in input_file:
-            temp = line.strip()
-            string_from_file += temp
-    if string_from_file != '':
-        obj = serializer.check_format(string_from_file)
-        write_to_file(obj)
+    try:
+        with open(file_name, 'r') as input_file:
+            for line in input_file:
+                temp = line.strip()
+                string_from_file += temp
+        if string_from_file != '':
+            obj = serializer.Serializer().check_format(string_from_file)
+            write_to_file(obj)
+            return obj
+        else:
+            print('File has no data.')
+            return string_from_file
+    except PermissionError:
+        raise PermissionError('File access issues.')
+    except OSError:
+        raise OSError(f'OSError. File with path/name {file_name} cannot be open.')
 
 
 def write_to_file(decoded_string):
@@ -75,8 +87,9 @@ def url_argument(url_name):
         file_string += symbol
     if file_string != '':
         file_string = file_string.strip()
-        d = serializer.check_format(file_string)
-        write_to_file(d)
+        decoded_str = serializer.Serializer().check_format(file_string)
+        write_to_file(decoded_str)
+        return decoded_str
     else:
         print(f'The URL {url_name} has no data.')
 
@@ -100,7 +113,7 @@ def run_cmd_line():
             term_string += i
         string = term_string.strip()
         print('Your json-string: ' + string)
-        st = serializer.check_format(string)
+        st = serializer.Serializer().check_format(string)
         print(f'Deserialized: {st}')
     else:
         print('Instruction: You should point input data after script name. '
@@ -109,5 +122,8 @@ def run_cmd_line():
 
 
 if __name__ == '__main__':
-    serializer = serializer.Serializer()
-    run_cmd_line()
+    # serializer = serializer.Serializer()
+    try:
+        run_cmd_line()
+    except Exception as e:
+        print(e)

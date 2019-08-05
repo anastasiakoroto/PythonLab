@@ -1,7 +1,7 @@
 import pytest
 import json
 
-from JSON_serializer import serializer
+import serializer
 
 obj = serializer.Serializer()
 
