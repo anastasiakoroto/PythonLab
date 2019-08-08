@@ -130,8 +130,3 @@ class TestDeserializer:
         des_inp = obj.deserialize(t_inp)
         json_out = json.loads(json.dumps(j_out))
         assert des_inp == json_out
-
-
-if __name__ == '__main__':
-    deserializer_func = ['-v', 'Tests/deserializer_test.py::TestDeserializer']
-    pytest.main(deserializer_func)

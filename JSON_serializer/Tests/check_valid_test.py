@@ -7,11 +7,6 @@ import main
 
 class TestValid:
 
-    def test_is_valid_file(self):
-        inp = main.is_valid_file('/home/anastasiya/Downloads/ironman.txt')
-        out = True
-        assert inp == out
-
     def test_is_valid_file_err(self):
         inp = main.is_valid_file('ironman.txt')
         out = False
@@ -30,6 +25,11 @@ class TestValid:
             with pytest.raises(PermissionError):
                 file_path = '/home/nickfury/work/The Avengers Initiative/characteristics/falcon.txt'
                 main.file_argument(file_path)
+
+    def test_is_valid_file(self):
+        with mock.patch('main.is_valid_file') as mocked_path:
+            mocked_path.return_value = True
+            assert main.is_valid_file('/home/Star-L♥rd/work/InfinityStonesHunters/Ravagers/yondu_udonta♥.txt') == True
 
     def test_valid_path(self):
         with mock.patch('os.path.exists') as path:
@@ -63,14 +63,11 @@ class TestValid:
 
     def test_json_from_url(self):
         with mock.patch('main.requests') as mock_requests:
-            mock_requests.get.return_value.text = """  {
-                                                         "fruit": "Apple",
-                                                         "size": "Large",
-                                                         "color": "Red"
-                                                       }
-            """
-            url_address = 'https://support.oneskyapp.com/hc/en-us/article_attachments/202761627/example_1.json'
-            assert main.url_argument(url_address) == {"fruit": "Apple", "size": "Large", "color": "Red"}
+            mock_requests.get.return_value.text = """{"name": "Gamora", "species": "Zehoberei(Cyborg)", 
+            "colorOfSkin": "Green", "gang": "Guardians of the Galaxy"}"""
+            url_address = 'https://enemies_of_sovereign.bestgalacticraceever.com'
+            assert main.url_argument(url_address) == {"name": "Gamora", "species": "Zehoberei(Cyborg)",
+            "colorOfSkin": "Green", "gang": "Guardians of the Galaxy"}
 
     def test_json_from_url_err(self):
         with mock.patch('main.requests.get') as mock_requests:
@@ -93,8 +90,3 @@ class TestValid:
             if valid_url:
                 res = main.url_argument('https://www.marvel.com')
                 assert res == 'Wrong data. It is not a json format.'
-
-
-if __name__ == '__main__':
-    valid_func = ['-v', 'check_valid_test.py::TestValid']
-    pytest.main(valid_func)

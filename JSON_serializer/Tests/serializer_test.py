@@ -69,8 +69,3 @@ class TestSerializer:
         ser_inp = obj.serialize(test_input)
         json_out = json.dumps(test_output)
         assert ser_inp == json_out
-
-
-if __name__ == '__main__':
-    serializer_func = ['-v', 'Tests/serializer_test.py::TestSerializer']
-    pytest.main(serializer_func)
