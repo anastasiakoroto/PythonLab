@@ -1,27 +1,3 @@
-import json
-
-
-class StrangerThings:
-
-    def __init__(self, serial_name, season_number, amount_of_ser, ser_names, fallen):
-        self.serial_name = serial_name
-        self.season_number = season_number
-        self.amount_of_series = amount_of_ser
-        if ser_names is None:
-            ser_names = []
-        self.ser_names = ser_names
-        if fallen is None:
-            fallen = []
-        self.fallen = fallen
-
-
-serial = StrangerThings('Stranger Things', 3, 8,
-                        ["Suzie, Do You Copy?", "The Mall Rats", "Case of the Missing Lifeguard", 'The Sauna Test',
-                         'The Flayed', 'E Pluribus Unum', 'The Bite', 'The battle of Starcourt'],
-                        [{'name': 'Billy', 'diedLikeHero': True, 'totallyDied': True},
-                         {'name': "Hopper", 'diedLikeHero': True, 'totallyDied': False}])
-
-
 class Serializer:
 
     def serialize(self, obj):
@@ -57,7 +33,7 @@ class Serializer:
             for attr in obj:
                 key = self.serialize(attr)
                 value = self.serialize(obj[attr])
-                new_string = str(key) + ':' + str(value)  # probably should remove making key type of str
+                new_string = str(key) + ':' + str(value)
                 attr_value_dict = attr_value_dict + new_string + ', '
             attr_value_dict = attr_value_dict[:-2]
             attr_value_dict += '}'
@@ -75,72 +51,26 @@ class Serializer:
             note.append(finish_note)
             finish_string = finish_string + finish_note + ', '
         finish_string = finish_string[:-2] + '}'
-        # finish_string += '}'
-        # print('Result: ', finish_string, sep='\n', end='\n\n')
-        print('Serialized string (view 1): ')
-        print('{', end='')
-        for i in range(len(note) - 1):
-            print(note[i], end=',\n')
-        print(note[len(note) - 1], end='')
-        print('}', end='\n\n')
-        #
         return finish_string
 
-
-ser = Serializer()
-# ser.serialize(serial)
-ss = ser.serialize(serial)
-print('Serialized string (view 2): ')
-print(ss, end='\n\n')
-
-print('JSON converting:')
-j = json.loads('{"serial_name": "Stranger Things", "season_number": 3, "amount_of_series":8, '
-               '"ser_names":["Suzie, Do You Copy?", "The Mall Rats", "Case of the Missing Lifeguard", '
-               '"The Sauna Test", "The Flayed", "E Pluribus Unum", "The Bite", "The battle of Starcourt"], '
-               '"fallen":[{"name":"Billy", "diedLikeHero":true, "totallyDied":true}, '
-               '{"name":"Hopper", "diedLikeHero":true, "totallyDied":false}]}')
-print(j)
-print()
-
-
-class Deserializer:
-
-    def if_array(self, string_arr):
-        initial_string = string_arr[1:-1]
+    def if_array(self, initial_string):
         list_of_el = []  # list of separate strings
         new_list = []  # list with deserialized elements of initial array
         index = 0
         brackets_list = []  # stack with opened brackets
         begin_to_split = 0
         commas_opened = False
+        check_exception = []
         for letter in initial_string:
             if letter == '"':
                 commas_opened = not commas_opened
-            # elif letter == ',' and commas_opened is False and not brackets_list:
-            #     list_of_el.append(initial_string[begin_to_split: index])
-            #     begin_to_split = index + 1
-            elif letter == ',' and commas_opened is False:
-                try:
-                    if not brackets_list:
-                        list_of_el.append(initial_string[begin_to_split: index])
-                        begin_to_split = index + 1
-                except ValueError:
-                    print('Wrong. This data cannot be deserialized')
+            elif letter in ['{', '[', ']', '}']:
+                self.check_symbols(letter, brackets_list, check_exception)
+                if len(check_exception) != 0:
                     return []
-            elif letter == '{' or letter == '[':
-                brackets_list.append(letter)
-            elif letter in ['}', ']']:
-            # elif (letter == ']' and brackets_list[-1] == '[') or (letter == '}' and brackets_list[-1] == '{'):
-                try:
-                    if not brackets_list:
-                        raise ValueError
-                    if (letter == ']' and brackets_list[-1] == '[') or (letter == '}' and brackets_list[-1] == '{'):
-                        brackets_list.pop(-1)
-                    else:
-                        raise ValueError
-                except ValueError:
-                    print('Wrong data. It cannot be deserialized.')
-                    return []  # check what json returns actually
+            elif letter == ',' and commas_opened is False and not brackets_list:
+                list_of_el.append(initial_string[begin_to_split: index])
+                begin_to_split = index + 1
             if index == len(initial_string) - 1:
                 list_of_el.append(initial_string[begin_to_split: index + 1])
             index += 1
@@ -159,6 +89,7 @@ class Deserializer:
         commas_opened = False
         colon = False  # check if separator found
         brackets = []  # stack with open brackets
+        check = []
         for letter in string:
             if letter == ':' and commas_opened is False and not brackets:
                 colon = not colon
@@ -171,29 +102,22 @@ class Deserializer:
                 begin_of_split = index + 1
             elif letter == '"':
                 commas_opened = not commas_opened
-            elif letter in ['[', '{']:
-                brackets.append(letter)
-            # elif (letter == ']' and brackets[-1] == '[') or (letter == '}' and brackets[-1] == '{'):
-            #     brackets.pop(-1)
-            elif letter in ['}', ']']:
-            # elif (letter == ']' and brackets_list[-1] == '[') or (letter == '}' and brackets_list[-1] == '{'):
-                try:
-                    if not brackets:
-                        raise ValueError
-                    if (letter == ']' and brackets[-1] == '[') or (letter == '}' and brackets[-1] == '{'):
-                        brackets.pop(-1)
-                    else:
-                        raise ValueError
-                except ValueError:
-                    print('Wrong data. It cannot be deserialized.')
-                    return []  # check what json returns actually
-            if not brackets and index == (len(string) - 1):
-                value = string[begin_of_split: index + 1]
-                value_ch = not value_ch
+            elif letter in ['{', '[', ']', '}']:
+                self.check_symbols(letter, brackets, check)
+                if len(check) != 0:
+                    return []
+            try:
+                if not brackets and index == (len(string) - 1):
+                    value = string[begin_of_split: index + 1]
+                    value_ch = not value_ch
+                elif index == (len(string) - 1) and brackets:
+                    raise ValueError
+            except ValueError:
+                print('Wrong data. ' + str(len(brackets)) + ' of brackets without pair. It cannot be deserialized.')
+                return {}
             if key_ch is True and value_ch is True:
                 pairs.append((key, value))
                 key_ch, value_ch, colon = False, False, False
-
             index += 1
         return pairs
 
@@ -206,6 +130,25 @@ class Deserializer:
             value = self.deserialize(temp_2)
             object_dict[key] = value
         return object_dict
+
+    def check_symbols(self, current_letter, brackets_stack, check):
+        if current_letter in ['[', '{']:
+            brackets_stack.append(current_letter)
+            return brackets_stack
+        elif current_letter in ['}', ']']:
+            try:
+                if not brackets_stack:
+                    raise ValueError
+                if (current_letter == ']' and brackets_stack[-1] == '[') \
+                        or (current_letter == '}' and brackets_stack[-1] == '{'):
+                    brackets_stack.pop(-1)
+                    return brackets_stack
+                else:
+                    raise ValueError
+            except ValueError:
+                check.append(1)
+                print('Wrong data. It cannot be deserialized.')
+                return check
 
     def is_number(self, n):
         try:
@@ -221,22 +164,31 @@ class Deserializer:
             return None
         elif string[0] == '"':
             return string[1:-1]
-        elif string[0] == '[':
-            return self.if_array(string)
-        elif string[0] == '{':
-            no_borders_str = string[1:-1]
-            if_dict = self.split_to_pairs(no_borders_str)
-            return self.make_dict(if_dict)
+        elif string[0] in ['[', '{']:
+            try:
+                if string[0] == '[' and string[-1] == ']':
+                    no_borders_str = string[1:-1]
+                    return self.if_array(no_borders_str)
+                elif string[0] == '{' and string[-1] == '}':
+                    no_borders_str = string[1:-1]
+                    if_dict = self.split_to_pairs(no_borders_str)
+                    return self.make_dict(if_dict)
+                else:
+                    raise ValueError
+            except ValueError:
+                print('Wrong data. It cannot be deserialized.')
+                if string[0] == '{':
+                    return {}
+                return []
         elif self.is_number(string):
             if float(string) % 1 == 0:
-            # if float(string).is_integer():
-                return int(string)
+                number = float(string)
+                return int(number)
             else:
                 return float(string)
 
-
-des = Deserializer()
-print('Deserialized dictionary: ')
-print(des.deserialize(ss))
-# print(des.deserialize('{"fallen": [{"name" : "Billy", "diedLikeHero": true, "totallyDied":true}, '
-#                       '{"name":"Hopper", "diedLikeHero":true, "totallyDied":false}]}'))
+    def check_format(self, input_string):  # check if string has json-format
+        if input_string[0] == '{':
+            return self.deserialize(input_string)
+        else:
+            return 'Wrong data. It is not a json format.'
