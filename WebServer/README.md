@@ -24,7 +24,7 @@ _Example:_
 * Point interpreter and name of the file (__server_first.py__) and then write port number - __8001__.  
 _Example:_
 `$ python3 server_first.py 8001`
-* Open another terminal and do the same, but point __server_second.py__ script name and __8002__ port number.
+* Open another terminal and do the same, but point __server_second.py__ script name and __8002__ port number.  
 _Example:_
 `$ python3 server_second.py 8002`
 * Enter any of these addresses:  
