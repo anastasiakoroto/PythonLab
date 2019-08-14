@@ -9,10 +9,10 @@ __One server used.__
   
     
 Pages functions:
-* _auth.html_ - print message about successful authorization, link back to _form.html_ page is located here
-* _deauth.html_ - print message about successful de-authorization, link back to _form.html_ page is located here
+* _auth.html_ - print message about successful authorization
+* _deauth.html_ - print message about successful de-authorization
 * _form.html_ - send the entered data to _charge.html_, on this page authorization and de-authorization buttons are located
-* _charge.html_ - if user is logged in, print succesful message, otherwise a message about the lack of authorization. Link back to _form.html_ page is located here
+* _charge.html_ - if user is logged in, print succesful message, otherwise a message about the lack of authorization
 * _error.html_ - print error message
 
 ## How to run
