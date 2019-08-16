@@ -6,7 +6,10 @@ import pages_response
 class Server(BaseHTTPRequestHandler):
 
     def do_GET(self):
-        pages_response.function_of_page[self.path](self)
+        if self.path in pages_response.function_of_page:
+            pages_response.function_of_page[self.path](self)
+        else:
+            pages_response.error_page(self)
 
     def do_POST(self):
         content_length = int(self.headers['Content-Length'])
