@@ -69,7 +69,7 @@ def charge(s, body):
         params = parse_qs(body.decode())
         value = params['digit'][0]
         message = f"""<br/><p><center><font face="impact" size="+3" color="#93B1B4"> OK. Peter Parker had got 
-        {value}$ when he had been in London.<br /> I wonder if that was enought for him...</font></center></p>"""
+        {value}$ when he had been in London.<br /> I wonder if that was enough for him...</font></center></p>"""
         response, page = read_page('/charge.html', message=message)
     else:
         auth_message = """<br /><p><center><font face="impact" size="+3" color="#93B1B4">
@@ -95,6 +95,5 @@ function_of_page = {
     '/form.html': form,
     '/auth.html': authorize,
     '/deauth.html': de_authorize,
-    '/charge.html': charge,
     '/error.html': error_page
 }
