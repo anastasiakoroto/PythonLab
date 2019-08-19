@@ -41,14 +41,15 @@ class ServerSecond(BaseHTTPRequestHandler):
         cookie_value = simp_cookie.get('auth')
         if cookie_value is None or cookie_value.value == '0':
             auth_message = """<br /><p><center><font face="impact" size="+3" color="#93B1B4">
-                        Error. No AUTH info.</font></center></p>"""
+            Error. No AUTH info.</font></center></p>"""
             response, page = read_page('http://localhost:8002/charge.html', message=auth_message)
         else:
             params = parse_qs(body.decode())
             if len(params) > 0:
                 value = params['digit'][0]
-                message = f"""<br/><p><center><font face="impact" size="+3" color="#93B1B4"> OK. Peter Parker had got 
-                        {value}$ when he had been in London.<br /> I wonder if that was enough for him...</font></center></p>"""
+                message = f"""<br/><p><center><font face="impact" size="+3" color="#93B1B4"> OK. Peter Parker 
+                had got {value}$ when he had been in London.<br /> I wonder if that was enough for him...</font>
+                </center></p>"""
                 response, page = read_page('http://localhost:8002/charge.html', message=message)
             else:
                 response, page = read_page('http://localhost:8002/error.html')
