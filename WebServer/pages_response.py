@@ -47,7 +47,7 @@ def form(s):
     simple_cookie = SimpleCookie(cookie)
     cookie_value = simple_cookie.get('auth')
     title = '<p><font color="#B2DDE1" face="impact" size="+3">form page</font></p>'
-    if cookie_value.value == '0' or cookie_value is None:
+    if cookie_value is None or cookie_value.value == '0':
         auth_page = '<p><a href="/auth.html"><font color="#899597" size="+1" face="verdana">AUTHORIZE' \
                     '</font></a></p>'
         response, page = read_page('/form.html', page_title=title, auth_page=auth_page)
