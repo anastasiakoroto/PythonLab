@@ -2,19 +2,19 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 from http.cookies import SimpleCookie
 
 from read_page_inf import read_page
-from error_handler import error_page
+from error_handler import not_found_page
 
 
-class ServerFirst(BaseHTTPRequestHandler):
+class ServerOne(BaseHTTPRequestHandler):
 
     def do_GET(self):
-        if self.path in self.function_of_page:
+        try:
             self.function_of_page[self.path](self)
-        else:
-            error_page(self, self.path)
+        except KeyError:
+            not_found_page(self, self.path)
 
     def hello_page(self):
-        response, page = read_page('http://localhost:8001/hello_page.html')
+        response, page = read_page('/hello_page.html')
         self.send_response(response)
         self.send_header('content-type', 'text/html')
         self.end_headers()
@@ -28,11 +28,11 @@ class ServerFirst(BaseHTTPRequestHandler):
         if cookie_value is None or cookie_value.value == '0':
             auth_page = '<p><a href="http://localhost:8002/auth.html"><font color="#899597" size="+1" face="verdana">' \
                         'AUTHORIZE</font></a></p>'
-            response, page = read_page('http://localhost:8001/form.html', page_title=title, auth_page=auth_page)
+            response, page = read_page('/form.html', page_title=title, auth_page=auth_page)
         else:
             de_auth_page = '<p><a href="http://localhost:8002/deauth.html"><font color="#899597" size="+1" ' \
                            'face="verdana">DE-AUTHORIZE</font></a></p>'
-            response, page = read_page('http://localhost:8001/form.html', page_title=title, auth_page=de_auth_page)
+            response, page = read_page('/form.html', page_title=title, auth_page=de_auth_page)
         self.send_response(response)
         self.send_header('content-type', 'text/html')
         self.end_headers()
@@ -45,5 +45,5 @@ class ServerFirst(BaseHTTPRequestHandler):
     }
 
 
-httpd = HTTPServer(('localhost', 8001), ServerFirst)
+httpd = HTTPServer(('localhost', 8001), ServerOne)
 httpd.serve_forever()
