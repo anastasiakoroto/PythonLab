@@ -42,9 +42,6 @@ class ServerTwo(BaseHTTPRequestHandler):
         back_to_form_button = '<p><a href="http://localhost:8001/form.html"><font size="+2" face="impact" ' \
                               'color="ACCACD">BACK TO FORM</font></a></p>'
         if cookie_value is None or cookie_value.value == '0':
-            # auth_message = """<br /><p><center><font face="impact" size="+3" color="#93B1B4">
-            #             Error. No AUTH info.</font></center></p>"""
-            # response, page = read_page('/charge.html', message=auth_message)
             error_message = '<br />Unauthorized'
             _, page = read_page('/error.html', error_status=401, message=error_message,
                                 back_to_form=back_to_form_button)
