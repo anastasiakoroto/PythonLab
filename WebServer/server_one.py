@@ -1,49 +1,10 @@
-from http.server import BaseHTTPRequestHandler, HTTPServer
-from http.cookies import SimpleCookie
-
-from read_page_inf import read_page
-from error_handler import not_found_page
+from base import BaseServer, run
+from const import SERVERS_HOST, SERVER_ONE_PORT
 
 
-class ServerOne(BaseHTTPRequestHandler):
-
-    def do_GET(self):
-        try:
-            self.function_of_page[self.path](self)
-        except KeyError:
-            not_found_page(self, self.path)
-
-    def hello_page(self):
-        response, page = read_page('/hello_page.html')
-        self.send_response(response)
-        self.send_header('content-type', 'text/html')
-        self.end_headers()
-        self.wfile.write(page.encode('utf-8'))
-
-    def form(self):
-        cookie = self.headers.get('Cookie')
-        simple_cookie = SimpleCookie(cookie)
-        cookie_value = simple_cookie.get('auth')
-        title = '<p><font color="#B2DDE1" face="impact" size="+3">form page</font></p>'
-        if cookie_value is None or cookie_value.value == '0':
-            auth_page = '<p><a href="http://localhost:8002/auth.html"><font color="#899597" size="+1" face="verdana">' \
-                        'AUTHORIZE</font></a></p>'
-            response, page = read_page('/form.html', page_title=title, auth_page=auth_page)
-        else:
-            de_auth_page = '<p><a href="http://localhost:8002/deauth.html"><font color="#899597" size="+1" ' \
-                           'face="verdana">DE-AUTHORIZE</font></a></p>'
-            response, page = read_page('/form.html', page_title=title, auth_page=de_auth_page)
-        self.send_response(response)
-        self.send_header('content-type', 'text/html')
-        self.end_headers()
-        self.wfile.write(page.encode('utf-8'))
-
-    function_of_page = {
-        '/': hello_page,
-        '/hello_page.html': hello_page,
-        '/form.html': form
-    }
+class ServerOne(BaseServer):
+    pass
 
 
-httpd = HTTPServer(('localhost', 8001), ServerOne)
-httpd.serve_forever()
+if __name__ == '__main__':
+    run(SERVERS_HOST, SERVER_ONE_PORT, ServerOne)

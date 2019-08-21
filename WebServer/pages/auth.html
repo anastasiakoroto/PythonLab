@@ -1,22 +1,14 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>
-        AUTH
-    </title>
-</head>
-<body>
+{% extends 'base.html' %}
+{% block content %}
 <font size="+3" face="impact" color="#A0D7DD">
     you are authorized.
 </font>
 <center>
 <br/><br/>
 <p>
-    <a href="http://localhost:8001/form.html">
+    <a href="http://{{server_one_host}}:{{server_one_port}}/form.html">
         <font face="impact" size="+2" color="#899597">BACK TO FORM</font>
     </a>
 </p>
 </center>
-</body>
-</html>
-
+{% endblock %}
