@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% block content %}
+<style>
+    a {
+        font-family: Impact;
+        font-size: 25px;
+    }
+    body {
+        font-family: Verdana;
+        font-size: 55px;
+    }
+</style>
+<br/>
+<p style="color:grey">
+    {{error_status}}: ERROR <br/>
+    {{message}}<br/><br/>
+    {% if back_to_form %}
+        <a style="color:ACCACD" href="http://{{server_one_host}}:{{server_one_port}}/form.html">
+            BACK TO FORM
+        </a>
+    {% endif %}
+</p>
+{% endblock %}

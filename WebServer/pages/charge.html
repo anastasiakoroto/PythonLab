@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% block content %}
+<style>
+    a {
+        font-family: Verdana;
+        font-size: 25px;
+    }
+    body {
+        font-family: Impact;
+        font-size: 35px;
+    }
+</style>
+<br/>
+<div align="center" style="color:#93B1B4">
+    OK. Peter Parker had got {{ value }}$ when he had been in London.
+    <br /> I wonder if that was enough for him...
+</div>
+<p><br/>
+<div align="center">
+    <a style="color:#B2DDE1" href="http://{{server_one_host}}:{{server_one_port}}/form.html">
+        BACK TO FORM
+    </a>
+</div>
+{% endblock %}

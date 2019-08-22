@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% block content %}
+<style>
+    a {
+        font-family: Impact;
+        font-size: 25px;
+    }
+    body {
+        font-family: Impact;
+        font-size: 35px;
+    }
+</style>
+<p style="color:#A0D7DD">
+    you are de-authorized.
+</p>
+<div align="center"><br/>
+        <a style="color:#899597" href="http://{{server_one_host}}:{{server_one_port}}/form.html">
+            BACK TO FORM
+        </a>
+</div>
+{% endblock %}
