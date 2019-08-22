@@ -1,7 +1,6 @@
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from http.cookies import SimpleCookie
-from urllib.parse import parse_qs
-
+import cgi
 
 from read_page_inf import read_page
 from error_handler import not_found_page
@@ -17,9 +16,19 @@ class BaseServer(BaseHTTPRequestHandler):
             not_found_page(self)
 
     def do_POST(self):
-        content_length = int(self.headers['Content-Length'])
-        body = self.rfile.read(content_length)
-        self.charge(body)
+        self.charge()
+
+    def do_OPTIONS(self):
+        self.send_response(200, 'ok')
+        self.send_header('Content-Type', 'text/html')
+        self.send_cors_headers()
+        self.end_headers()
+
+    def send_cors_headers(self):
+        self.send_header("Access-Control-Allow-Origin", 'http://localhost:8001')
+        self.send_header("Access-Control-Allow-Credentials", 'true')
+        self.send_header("Access-Control-Allow-Headers", "Content-Type")
+        self.send_header("Access-Control-Allow-Method", "GET, POST, OPTIONS")
 
     def hello_page(self):
         page = read_page('/hello_page.html', server_one_host=SERVERS_HOST, server_one_port=SERVER_ONE_PORT)
@@ -33,11 +42,8 @@ class BaseServer(BaseHTTPRequestHandler):
         simple_cookie = SimpleCookie(cookie)
         cookie_value = simple_cookie.get('auth')
         head_title = 'FORM'
-        title = '<p><font color="#B2DDE1" face="impact" size="+3">form page</font></p>'
-
         auth_condition = (cookie_value is None or cookie_value.value == '0')
         context_dict = {'title': head_title,
-                        'page_title': title,
                         'auth_condition': auth_condition,
                         'server_two_host': SERVERS_HOST,
                         'server_two_port': SERVER_TWO_PORT,
@@ -66,45 +72,33 @@ class BaseServer(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(page)
 
-    def charge(self, body):
-        cookie = self.headers.get('Cookie')
+    def charge(s):
+        cookie = s.headers.get('Cookie')
         simp_cookie = SimpleCookie(cookie)
         cookie_value = simp_cookie.get('auth')
-        back_to_form = True
         if cookie_value is None or cookie_value.value == '0':
-            error_message = 'Unauthorized'
-            error_dict = {'title': 'ERROR',
-                          'error_status': 401,
-                          'message': error_message,
-                          'back_to_form': back_to_form,
-                          'server_one_host': SERVERS_HOST,
-                          'server_one_port': SERVER_ONE_PORT}
-            page = read_page('/error.html', **error_dict)
+            alert_message = '401 error: Unauthorized'
             response = 401
         else:
-            params = parse_qs(body.decode())
-            if params.get('digit') is not None:
-                value = params['digit'][0]
-                context_dict = {'title': 'RESPONSE',
-                                'value': value,
-                                'server_one_host': SERVERS_HOST,
-                                'server_one_port': SERVER_ONE_PORT}
-                page = read_page('/charge.html', **context_dict)
+            post_form = cgi.FieldStorage(
+                fp=s.rfile,
+                headers=s.headers,
+                environ={'REQUEST_METHOD': 'POST',
+                         'CONTENT_TYPE': s.headers['Content-Type']
+                         })
+            value = post_form.getvalue('digit')
+            if value != '':
+                alert_message = f'OK. Peter Parker had got { value }$ when he had been in London. I wonder if that ' \
+                                f'was enough for him...'
                 response = 200
             else:
-                error_message = 'The form is filled out incorrectly'
-                error_dict = {'title': 'ERROR',
-                              'error_status': 400,
-                              'message': error_message,
-                              'back_to_form': back_to_form,
-                              'server_one_host': SERVERS_HOST,
-                              'server_one_port': SERVER_ONE_PORT}
-                page = read_page('/error.html', **error_dict)
+                alert_message = '400 error: The form is filled out incorrectly'
                 response = 400
-        self.send_response(response)
-        self.send_header('Content-Type', 'text/html')
-        self.end_headers()
-        self.wfile.write(page)
+        s.send_response(response)
+        s.send_cors_headers()
+        s.send_header('Content-Type', 'text/html')
+        s.end_headers()
+        s.wfile.write(alert_message.encode('utf-8'))
 
     function_of_page = {
         '/': hello_page,
@@ -120,4 +114,4 @@ def run(server_host, port_number, server_name):
     try:
         httpd.serve_forever()
     except KeyboardInterrupt:
-        print('Shutting down server.')
+        print('Program closed.')
